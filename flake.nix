@@ -13,7 +13,6 @@
 
         buildInputs = [
           pkgs.gcc          # g++
-          pkgs.cmake        # optional
           pkgs.ncurses      # headers + library
           pkgs.clang-tools  # clangd
         ];

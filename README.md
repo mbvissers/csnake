@@ -1,6 +1,6 @@
 # csnake
 
-A copy of my [rsnake](https://github.com/mbvissers/rsnake) repository but using `ncurses` and C++.
+A copy of my [rsnake](https://github.com/mbvissers/rsnake) repository but using `ncurses` and C++ instead of Rust with `crossterm`.
 
 ## Installation / Running
 
