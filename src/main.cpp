@@ -1,9 +1,9 @@
 #include <chrono>
 #include <cstdlib>
+#include <deque>
 #include <ncursesw/ncurses.h>
 #include <stdlib.h>
 #include <thread>
-#include <vector>
 
 struct Position {
   int x;
@@ -12,8 +12,9 @@ struct Position {
 
 void draw_arena(int, int, int, int);
 void draw_fruit(int, int);
-std::vector<Position> random_snake(int, int, int, int, int);
-void draw_snake(std::vector<Position>);
+std::deque<Position> random_snake(int, int, int, int, int);
+void draw_snake(std::deque<Position>);
+std::deque<Position> move_snake(int, int, std::deque<Position>);
 void draw_score(int);
 
 int main() {
@@ -31,23 +32,33 @@ int main() {
   int min_y = 2;
   int max_y = LINES - 3;
 
-  std::vector<Position> snake = random_snake(min_x, max_x, min_y, max_y, 5);
+  std::deque<Position> snake = random_snake(min_x, max_x, min_y, max_y, 5);
 
   // mvprintw(1, 2, "Size: %i x %i", max_y, max_x);
   draw_arena(min_x, max_x, min_y, max_y);
   draw_snake(snake);
-  draw_score(123);
 
-  int rand_x = min_x + (random() % (max_x - min_x - 1 + 1));
-  int rand_y = min_y + (random() % (max_y - min_y - 1 + 1));
   // Keep fruit in bounds
   min_x = min_x + 1;
   max_x = max_x - 1;
   min_y = min_y + 1;
   max_y = max_y - 1;
+  int rand_x = min_x + (random() % (max_x - min_x - 1 + 1));
+  int rand_y = min_y + (random() % (max_y - min_y - 1 + 1));
   draw_fruit(rand_x, rand_y);
 
   refresh();
+
+  while (true) {
+    snake = move_snake(-1, 0, snake);
+    draw_snake(snake);
+
+    // TEMP
+    draw_score(snake.size());
+
+    refresh();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+  }
 
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
@@ -55,12 +66,12 @@ int main() {
   return 0;
 }
 
-std::vector<Position> random_snake(int min_x, int max_x, int min_y, int max_y,
-                                   int size) {
-  // TODO: Make this a random direction
-  Position direction = Position({-1, 0});
+std::deque<Position> random_snake(int min_x, int max_x, int min_y, int max_y,
+                                  int size) {
+  // Move snake to the right (tail at the right, snake looks left)
+  Position direction = Position({1, 0});
 
-  std::vector<Position> snake = {};
+  std::deque<Position> snake = {};
 
   // Keep snake in bounds after generating its body
   min_x = min_x + size;
@@ -81,7 +92,22 @@ std::vector<Position> random_snake(int min_x, int max_x, int min_y, int max_y,
   return snake;
 }
 
-void draw_snake(std::vector<Position> snake) {
+std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake) {
+  Position head = snake.front();
+  Position tail = snake.back();
+
+  mvprintw(3, 3, "Head pos: %i, %i", head.x, head.y);
+
+  snake.push_front({head.x + dx, head.y + dy});
+  init_pair(4, COLOR_BLACK, COLOR_BLACK);
+  color_set(4, NULL);
+  mvprintw(tail.y, tail.x, " ");
+  snake.pop_back();
+  // snake.pop_back();
+  return snake;
+}
+
+void draw_snake(std::deque<Position> snake) {
   init_pair(2, COLOR_GREEN, COLOR_BLACK);
   color_set(2, NULL);
   for (int i = 0; i < snake.size(); i++) {
