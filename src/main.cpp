@@ -16,6 +16,7 @@ std::deque<Position> random_snake(int, int, int, int, int);
 void draw_snake(std::deque<Position>);
 std::deque<Position> move_snake(int, int, std::deque<Position>);
 void draw_score(int);
+Position get_direction(int, Position);
 
 int main() {
   srandom(time(NULL));
@@ -24,6 +25,8 @@ int main() {
   start_color();
   cbreak();
   noecho();
+  keypad(stdscr, TRUE);
+  nodelay(stdscr, TRUE);
   curs_set(0);
 
   // Arena size
@@ -49,8 +52,13 @@ int main() {
 
   refresh();
 
+  Position direction = {-1, 0};
   while (true) {
-    snake = move_snake(-1, 0, snake);
+    int ch = getch();
+
+    direction = get_direction(ch, direction);
+
+    snake = move_snake(direction.x, direction.y, snake);
     draw_snake(snake);
 
     // TEMP
@@ -59,8 +67,6 @@ int main() {
     refresh();
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
   }
-
-  std::this_thread::sleep_for(std::chrono::seconds(5));
 
   endwin();
   return 0;
@@ -138,4 +144,27 @@ void draw_score(int score) {
   init_pair(3, COLOR_BLACK, COLOR_MAGENTA);
   color_set(3, NULL);
   mvprintw(1, 2, " Score: %i ", score);
+}
+
+Position get_direction(int ch, Position dir) {
+  switch (ch) {
+  case 'w':
+    if (dir.y != 1)
+      dir = {0, -1};
+    break;
+  case 'a':
+    if (dir.x != 1)
+      dir = {-1, 0};
+    break;
+  case 's':
+    if (dir.y != -1)
+      dir = {0, 1};
+    break;
+  case 'd':
+    if (dir.x != -1)
+      dir = {1, 0};
+    break;
+  };
+
+  return dir;
 }
