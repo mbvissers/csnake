@@ -47,10 +47,10 @@ int main() {
   int min_y = 2;
   int max_y = LINES - 3;
 
-  int rand_x = min_x + (random() % (max_x - min_x - 1 + 1));
-  int rand_y = min_y + (random() % (max_y - min_y - 1 + 1));
-
   Arena arena = {min_x, max_x, min_y, max_y};
+
+  int rand_x = min_x + (random() % (arena.max_x - arena.min_x - 1 + 1));
+  int rand_y = min_y + (random() % (arena.max_y - arena.min_y - 1 + 1));
 
   // Keep fruit in bounds
   min_x = min_x + 1;
@@ -64,10 +64,8 @@ int main() {
   Position fruit = {rand_x, rand_y};
   Position direction_delta = {-1, 0};
 
-  // mvprintw(1, 2, "Size: %i x %i", max_y, max_x);
   draw_arena(arena);
   draw_snake(snake);
-
   draw_fruit(fruit);
 
   refresh();
@@ -76,23 +74,24 @@ int main() {
     int ch = getch();
 
     direction_delta = get_direction(ch, direction_delta);
+    if (direction_delta.x == 0 && direction_delta.y == 0) {
+      break;
+    }
 
     snake = move_snake(direction_delta.x, direction_delta.y, snake);
     StepResult res = checkStep(arena, snake, fruit);
 
-    if (res == Moved) {
-      score = 0;
-    }
     if (res == Ate) {
-      score = 999;
-    }
-    if (res == Died) {
+      int rand_x = min_x + (random() % (arena.max_x - arena.min_x - 1 + 1));
+      int rand_y = min_y + (random() % (arena.max_y - arena.min_y - 1 + 1));
+      fruit = {rand_x, rand_y};
+      score += 1;
+    } else if (res == Died) {
       break;
     }
 
     draw_snake(snake);
-
-    // TEMP
+    draw_fruit(fruit);
     draw_score(score);
 
     refresh();
@@ -133,13 +132,13 @@ std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake) {
   Position head = snake.front();
   Position tail = snake.back();
 
-  mvprintw(3, 3, "Head pos: %i, %i", head.x, head.y);
-
   snake.push_front({head.x + dx, head.y + dy});
+
   color_set(4, NULL);
   mvprintw(tail.y, tail.x, " ");
+
   snake.pop_back();
-  // snake.pop_back();
+
   return snake;
 }
 
@@ -182,6 +181,9 @@ void draw_score(int score) {
 
 Position get_direction(int ch, Position dir) {
   switch (ch) {
+  case 'q':
+    dir = {0, 0};
+    break;
   case 'w':
     if (dir.y != 1)
       dir = {0, -1};
