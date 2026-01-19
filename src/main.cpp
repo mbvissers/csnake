@@ -28,6 +28,7 @@ std::deque<Position> random_snake(int, int, int, int, int);
 Position get_direction(int, Position);
 void init_colors();
 StepResult checkStep(Arena arena, std::deque<Position> snake, Position fruit);
+std::deque<Position> grow_snake(std::deque<Position>);
 
 int main() {
   srandom(time(NULL));
@@ -49,14 +50,14 @@ int main() {
 
   Arena arena = {min_x, max_x, min_y, max_y};
 
-  int rand_x = min_x + (random() % (arena.max_x - arena.min_x - 1 + 1));
-  int rand_y = min_y + (random() % (arena.max_y - arena.min_y - 1 + 1));
-
   // Keep fruit in bounds
   min_x = min_x + 1;
   max_x = max_x - 1;
   min_y = min_y + 1;
   max_y = max_y - 1;
+
+  int rand_x = min_x + (random() % (arena.max_x - arena.min_x - 1 + 1));
+  int rand_y = min_y + (random() % (arena.max_y - arena.min_y - 1 + 1));
 
   // Initial values
   int score = 0;
@@ -95,7 +96,7 @@ int main() {
     draw_score(score);
 
     refresh();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   endwin();
@@ -136,7 +137,6 @@ std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake) {
 
   color_set(4, NULL);
   mvprintw(tail.y, tail.x, " ");
-
   snake.pop_back();
 
   return snake;
