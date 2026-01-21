@@ -19,7 +19,8 @@ struct Arena {
 
 enum StepResult { Moved, Ate, Died };
 
-std::deque<Position> move_snake(int, int, std::deque<Position>);
+std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake,
+                                Arena arena, Position fruit);
 void draw_arena(Arena);
 void draw_fruit(Position);
 void draw_snake(std::deque<Position>);
@@ -79,7 +80,8 @@ int main() {
       break;
     }
 
-    snake = move_snake(direction_delta.x, direction_delta.y, snake);
+    snake =
+        move_snake(direction_delta.x, direction_delta.y, snake, arena, fruit);
     StepResult res = checkStep(arena, snake, fruit);
 
     if (res == Ate) {
@@ -129,15 +131,20 @@ std::deque<Position> random_snake(int min_x, int max_x, int min_y, int max_y,
   return snake;
 }
 
-std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake) {
+std::deque<Position> move_snake(int dx, int dy, std::deque<Position> snake,
+                                Arena arena, Position fruit) {
   Position head = snake.front();
   Position tail = snake.back();
 
   snake.push_front({head.x + dx, head.y + dy});
 
+  StepResult res = checkStep(arena, snake, fruit);
+
   color_set(4, NULL);
-  mvprintw(tail.y, tail.x, " ");
-  snake.pop_back();
+  if (res != Ate) {
+    mvprintw(tail.y, tail.x, " ");
+    snake.pop_back();
+  }
 
   return snake;
 }
